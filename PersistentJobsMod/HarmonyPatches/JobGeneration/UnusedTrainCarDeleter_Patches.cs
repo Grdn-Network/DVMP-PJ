@@ -31,10 +31,18 @@ namespace PersistentJobsMod.HarmonyPatches.JobGeneration {
                 List<TrainCar> ___unusedTrainCarsMarkedForDelete) {
             if (!Main._modEntry.Active) {
                 return true;
-            } else {
-                __result = TrainCarsCreateJobOrDeleteCheck(__instance, COROUTINE_INTERVAL, ___unusedTrainCarsMarkedForDelete);
-                return false;
             }
+
+            // Clients must not independently reassign jobs or delete/spawn cars —
+            // that's the host's responsibility. Let the vanilla deleter run on clients
+            // (it won't spawn new cars, just deletes truly abandoned ones).
+            if (DvmpHostCheck.IsMultiplayerClient()) {
+                Main._modEntry.Logger.Log("[PJ] Skipping car-delete-check replacement — running as MP client");
+                return true;
+            }
+
+            __result = TrainCarsCreateJobOrDeleteCheck(__instance, COROUTINE_INTERVAL, ___unusedTrainCarsMarkedForDelete);
+            return false;
         }
 
         private static IEnumerator TrainCarsCreateJobOrDeleteCheck(UnusedTrainCarDeleter unusedTrainCarDeleter, float interval, List<TrainCar> ___unusedTrainCarsMarkedForDelete) {

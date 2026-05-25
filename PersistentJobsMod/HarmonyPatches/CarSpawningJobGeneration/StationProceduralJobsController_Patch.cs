@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using HarmonyLib;
 using PersistentJobsMod.CarSpawningJobGenerators;
 using PersistentJobsMod.ModInteraction;
 using PersistentJobsMod.Persistence;
 using UnityEngine;
+using UnityModManagerNet;
 
 namespace PersistentJobsMod.HarmonyPatches.CarSpawningJobGeneration {
     [HarmonyPatch(typeof(StationProceduralJobsController))]
@@ -13,6 +15,15 @@ namespace PersistentJobsMod.HarmonyPatches.CarSpawningJobGeneration {
         public static bool TryToGenerateJobs_Prefix(StationProceduralJobsController __instance, StationProceduralJobsRuleset ___generationRuleset, ref Coroutine ___generationCoro) {
             if (!Main._modEntry.Active) {
                 return true;
+            }
+
+            // In multiplayer, only the host owns world state (job generation, car spawning).
+            // Clients bail out and let the vanilla path run — it does nothing harmful since
+            // the server drives all job gen. Without this guard every client independently
+            // spawns its own private set of cars that only it can see.
+            if (DvmpHostCheck.IsMultiplayerClient()) {
+                Main._modEntry.Logger.Log($"[PJ] Skipping job gen for {__instance.stationController.logicStation.ID} — running as MP client");
+                return false;
             }
 
             try {
