@@ -125,6 +125,7 @@
     <Compile Include="Utilities\PaymentAndBonusTimeUtilities.cs" />
     <Compile Include="Utilities\PlayerSpawnedCarUtilities.cs" />
     <Compile Include="Utilities\ReflectionUtilities.cs" />
+    <Compile Include="Utilities\DvmpHostCheck.cs" />
     <Compile Include="Utilities\TaskUtilities.cs" />
     <Compile Include="Utilities\TranspilingUtilities.cs" />
     <Compile Include="HarmonyPatches\JobChainControllers\JobChainController_OnLastJobInChainCompleted_Patch.cs" />
